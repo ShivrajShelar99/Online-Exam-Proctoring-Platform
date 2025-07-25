@@ -1,0 +1,91 @@
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  role ENUM('student', 'instructor', 'admin') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE exams (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  instructor_id INT NOT NULL,
+  duration_minutes INT NOT NULL,
+  total_questions INT NOT NULL,
+  passing_score DECIMAL(5,2) NOT NULL,
+  is_active BOOLEAN DEFAULT false,
+  start_time TIMESTAMP NULL,
+  end_time TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (instructor_id) REFERENCES users(id)
+);
+
+
+CREATE TABLE questions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  exam_id INT NOT NULL,
+  question_text TEXT NOT NULL,
+  option_a VARCHAR(500) NOT NULL,
+  option_b VARCHAR(500) NOT NULL,
+  option_c VARCHAR(500) NOT NULL,
+  option_d VARCHAR(500) NOT NULL,
+  correct_answer ENUM('A', 'B', 'C', 'D') NOT NULL,
+  points INT DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE exam_sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  exam_id INT NOT NULL,
+  student_id INT NOT NULL,
+  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  submitted_at TIMESTAMP NULL,
+  score DECIMAL(5,2),
+  total_violations INT DEFAULT 0,
+  status ENUM('in_progress', 'completed', 'terminated') DEFAULT 'in_progress',
+  browser_info JSON,
+  UNIQUE KEY unique_exam_student (exam_id, student_id),
+  FOREIGN KEY (exam_id) REFERENCES exams(id),
+  FOREIGN KEY (student_id) REFERENCES users(id)
+);
+
+
+CREATE TABLE student_answers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  session_id INT NOT NULL,
+  question_id INT NOT NULL,
+  selected_answer ENUM('A', 'B', 'C', 'D'),
+  is_correct BOOLEAN,
+  answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_session_question (session_id, question_id),
+  FOREIGN KEY (session_id) REFERENCES exam_sessions(id) ON DELETE CASCADE,
+  FOREIGN KEY (question_id) REFERENCES questions(id)
+);
+
+
+CREATE TABLE violation_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  session_id INT NOT NULL,
+  violation_type VARCHAR(50) NOT NULL,
+  description TEXT,
+  detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  severity ENUM('low', 'medium', 'high') DEFAULT 'medium',
+  FOREIGN KEY (session_id) REFERENCES exam_sessions(id) ON DELETE CASCADE
+);
+
+
+CREATE INDEX idx_exams_instructor_id ON exams (instructor_id);
+CREATE INDEX idx_questions_exam_id ON questions (exam_id);
+CREATE INDEX idx_exam_sessions_exam_id ON exam_sessions (exam_id);
+CREATE INDEX idx_exam_sessions_student_id ON exam_sessions (student_id);
+CREATE INDEX idx_student_answers_session_id ON student_answers (session_id);
+CREATE INDEX idx_violation_logs_session_id ON violation_logs (session_id);
+CREATE INDEX idx_violation_logs_detected_at ON violation_logs (detected_at);

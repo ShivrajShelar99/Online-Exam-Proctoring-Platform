@@ -1,0 +1,68 @@
+# Secure Online Examination Platform Setup Guide
+
+## Overview
+This is a comprehensive online examination platform with AI-powered anti-cheating features built for UI Bakery. The platform includes real-time monitoring, face detection, browser behavior tracking, and comprehensive admin controls.
+
+## Features
+- ✅ Student Dashboard with available exams
+- ✅ Instructor Dashboard with exam management
+- ✅ Real-time camera monitoring using TensorFlow.js
+- ✅ Browser behavior tracking (tab switches, window blur)
+- ✅ Violation logging and threshold management
+- ✅ MCQ-based exam interface
+- ✅ Fullscreen mode enforcement
+- ✅ Results analytics and export
+- ✅ Live exam monitoring for instructors
+
+## Database Setup
+The platform uses PostgreSQL with the following tables:
+- `users` - Student and instructor accounts
+- `exams` - Exam definitions and settings
+- `questions` - MCQ questions with correct answers
+- `exam_sessions` - Individual exam attempts
+- `student_answers` - Student responses to questions
+- `violation_logs` - Anti-cheat violation tracking
+
+## Key Components
+
+### Authentication System
+- Role-based access (student/instructor/admin)
+- Session management with user context
+
+### Anti-Cheat Monitoring (`AntiCheatMonitor.tsx`)
+- **Face Detection**: Uses TensorFlow.js to detect if student's face is visible
+- **Browser Monitoring**: Tracks tab switches, window blur/focus events
+- **Violation Counting**: Accumulates violations with configurable thresholds
+- **Real-time Alerts**: Sends violations to violation_logs table
+
+### Student Interface (`ExamInterface.tsx`)
+- Fullscreen mode enforcement
+- Timer countdown with auto-submission
+- MCQ question display with radio buttons
+- Progress tracking and navigation
+- Real-time violation feedback
+
+### Instructor Dashboard (`InstructorDashboard.tsx`)
+- Exam creation and management
+- Live monitoring of active sessions
+- Violation threshold management
+- Results analytics and export
+
+## Browser APIs Used
+- **MediaDevices API**: Camera access for face detection
+- **Fullscreen API**: Enforces fullscreen mode during exams
+- **Page Visibility API**: Detects tab switches and window blur
+- **TensorFlow.js**: Face detection and tracking
+
+## Security Features
+1. **Camera Monitoring**: Continuous face detection during exam
+2. **Fullscreen Lock**: Prevents students from accessing other applications
+3. **Tab Switch Detection**: Logs when students switch browser tabs
+4. **Window Blur Detection**: Tracks when exam window loses focus
+5. **Violation Thresholds**: Configurable limits before session suspension
+6. **Real-time Monitoring**: Instructors can watch students live
+
+## Installation Steps
+
+### 1. Database Migration
+Run the provided migration to create all necessary tables:
